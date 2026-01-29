@@ -2,112 +2,228 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FALLXD STORE | Top Up Game Tercepat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VM777 - Mahjong Ways 2 Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .game-card:hover { transform: translateY(-8px); border-color: #3b82f6; box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3); }
-        .game-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #1e293b; }
+        body { background-color: #1a1c2e; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+        .mahjong-tile { 
+            background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+            border-radius: 6px;
+            box-shadow: inset 0 -4px 0 #ccc, 0 2px 4px rgba(0,0,0,0.5);
+            display: flex; justify-content: center; items-center; font-size: 2.5rem;
+            transition: transform 0.1s;
+        }
+        .tile-spin { animation: blurSpin 0.1s infinite linear; }
+        @keyframes blurSpin {
+            0% { filter: blur(0px); transform: translateY(0); }
+            50% { filter: blur(4px); transform: translateY(5px); }
+            100% { filter: blur(0px); transform: translateY(0); }
+        }
+        .win-flash { animation: flash 0.5s infinite; border: 3px solid #fbbf24 !important; }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-20">
 
-    <nav class="glass sticky top-0 z-50 px-6 py-4">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-black italic tracking-tighter text-blue-500">FALLXD STORE</h1>
-            <div class="flex items-center space-x-6">
-                <a href="index.html" class="hidden md:block text-sm font-bold hover:text-blue-400">BERANDA</a>
-                <a href="keranjang.html" class="relative p-2.5 bg-slate-800 rounded-xl hover:bg-slate-700 transition">
-                    <i class="fas fa-shopping-cart text-lg"></i>
-                    <span id="cart-count" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-slate-900">0</span>
-                </a>
+    <div id="adminPanel" class="hidden fixed inset-0 bg-black/90 z-[100] p-6">
+        <h2 class="text-xl font-bold mb-4 text-yellow-400">Setting Control</h2>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm">Win Rate (%) - Peluang Menang</label>
+                <input type="range" id="winRateRange" min="0" max="100" value="30" class="w-full">
+                <span id="winRateVal">30%</span>
             </div>
+            <div>
+                <label class="block text-sm">Tambah Saldo (Rp)</label>
+                <input type="number" id="addBalance" class="bg-gray-800 w-full p-2 rounded" placeholder="100000">
+            </div>
+            <button onclick="saveSettings()" class="bg-green-600 w-full py-2 rounded font-bold">SIMPAN & TUTUP</button>
+        </div>
+    </div>
+
+    <header class="p-4 flex justify-between items-center bg-[#1a1c2e] sticky top-0 z-50 border-b border-gray-800">
+        <div class="flex items-center gap-2" onclick="toggleAdmin()">
+            <i class="fas fa-bars text-xl"></i>
+            <h1 class="text-2xl font-black italic text-yellow-400 cursor-pointer">VM777</h1>
+        </div>
+        <div class="flex items-center gap-2 bg-[#2d325a] px-3 py-1 rounded-full border border-blue-500/30">
+            <span class="text-xs text-blue-400">Rp</span>
+            <span id="displayBalance" class="font-bold text-sm">1.071,89</span>
+            <i class="fas fa-wallet text-blue-400 ml-1 text-xs"></i>
+        </div>
+    </header>
+
+    <div id="gameScreen" class="p-2 mt-2">
+        <div class="relative bg-red-900/40 rounded-xl p-3 border-2 border-yellow-600 shadow-2xl overflow-hidden">
+            <div class="flex justify-around mb-2 bg-emerald-900/60 rounded py-1 text-xs font-bold text-emerald-400 border border-emerald-500/30">
+                <span>x1</span><span>x2</span><span>x3</span><span class="text-yellow-400 text-sm">x5</span>
+            </div>
+
+            <div id="slotGrid" class="grid grid-cols-5 gap-1.5 h-80">
+                </div>
+
+            <div id="winToast" class="hidden absolute inset-0 flex items-center justify-center bg-black/60 z-10">
+                <div class="text-center animate-bounce">
+                    <p class="text-yellow-400 font-black text-3xl">BIG WIN!</p>
+                    <p id="winValue" class="text-white text-xl font-bold">Rp 0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 mt-4">
+            <div class="bg-black/40 p-2 rounded border border-gray-700 text-center">
+                <p class="text-[9px] text-gray-400 uppercase">Total Taruhan</p>
+                <p class="text-blue-400 font-bold text-xs">200.00</p>
+            </div>
+            <div class="bg-black/40 p-2 rounded border border-gray-700 text-center">
+                <p class="text-[9px] text-gray-400 uppercase">Kemenangan</p>
+                <p id="lastWin" class="text-green-400 font-bold text-xs">0.00</p>
+            </div>
+            <div class="bg-black/40 p-2 rounded border border-gray-700 text-center">
+                <p class="text-[9px] text-gray-400 uppercase">Sisa Kredit</p>
+                <p id="creditText" class="text-yellow-400 font-bold text-xs italic">1.071,89</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center items-center gap-6 mt-6">
+        <div class="flex flex-col items-center opacity-50">
+            <div class="w-10 h-10 rounded-full border border-gray-500 flex items-center justify-center">
+                <i class="fas fa-bolt text-yellow-500"></i>
+            </div>
+            <span class="text-[10px] mt-1 uppercase">Turbo</span>
+        </div>
+
+        <button id="spinBtn" onclick="startSpin()" class="relative group">
+            <div class="absolute -inset-2 bg-yellow-500 rounded-full blur opacity-30 group-active:opacity-60"></div>
+            <div class="relative w-20 h-20 bg-gradient-to-t from-emerald-700 to-emerald-400 rounded-full border-4 border-white shadow-xl flex items-center justify-center">
+                <i class="fas fa-sync-alt text-3xl text-white group-active:rotate-180 transition-transform duration-500"></i>
+            </div>
+        </button>
+
+        <div class="flex flex-col items-center opacity-50">
+            <div class="w-10 h-10 rounded-full border border-gray-500 flex items-center justify-center">
+                <i class="fas fa-play text-gray-300"></i>
+            </div>
+            <span class="text-[10px] mt-1 uppercase">Auto</span>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#1a1c2e] border-t border-gray-800 flex justify-around p-3 text-[10px] text-gray-400 z-[60]">
+        <div class="flex flex-col items-center text-blue-400">
+            <i class="fas fa-home text-lg"></i>
+            <span class="mt-1">Favorit</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <i class="fas fa-wallet text-lg"></i>
+            <span class="mt-1">Deposit</span>
+        </div>
+        <div class="flex flex-col items-center font-bold text-white">
+            <i class="fas fa-sign-out-alt text-lg"></i>
+            <span class="mt-1 uppercase text-red-500">Keluar</span>
         </div>
     </nav>
 
-    <div class="max-w-6xl mx-auto p-4 mt-4">
-        <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-900 rounded-[2rem] p-8 md:p-12 shadow-2xl">
-            <div class="relative z-10">
-                <span class="bg-blue-400/20 text-blue-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Promo Terbatas</span>
-                <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">ISI DIAMOND <br>HARGA <span class="text-yellow-400">TERMURAH!</span></h2>
-                <p class="mt-4 text-blue-100/70 max-w-md">Nikmati layanan top up otomatis 24 jam dengan berbagai metode pembayaran aman.</p>
-            </div>
-            <i class="fas fa-bolt absolute right-[-20px] top-[-20px] text-[200px] text-white/10 rotate-12"></i>
-        </div>
-    </div>
-
-    <div class="max-w-6xl mx-auto px-4 mt-12">
-        <div class="flex items-center justify-between mb-8">
-            <div class="flex items-center space-x-3">
-                <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
-                <h2 class="text-xl font-bold uppercase tracking-tighter">Pilih Game Favorit</h2>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-            
-            <div class="game-card bg-slate-800/50 rounded-3xl p-4 flex flex-col items-center text-center">
-                <img src="https://via.placeholder.com/150/1e293b/ffffff?text=MLBB" class="w-full h-32 object-cover rounded-2xl mb-4 shadow-lg">
-                <h3 class="font-bold">Mobile Legends</h3>
-                <p class="text-xs text-gray-500 mb-4">Moonton</p>
-                <button onclick="addToCart('Mobile Legends', 55000, 'https://via.placeholder.com/150/1e293b/ffffff?text=MLBB')" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-xs font-black transition-all active:scale-95">
-                    TOP UP SEKARANG
-                </button>
-            </div>
-
-            <div class="game-card bg-slate-800/50 rounded-3xl p-4 flex flex-col items-center text-center">
-                <img src="https://via.placeholder.com/150/1e293b/ffffff?text=Free+Fire" class="w-full h-32 object-cover rounded-2xl mb-4 shadow-lg">
-                <h3 class="font-bold">Free Fire</h3>
-                <p class="text-xs text-gray-400 mb-4">Garena</p>
-                <button onclick="addToCart('Free Fire', 20000, 'https://via.placeholder.com/150/1e293b/ffffff?text=Free+Fire')" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-xs font-black transition-all active:scale-95">
-                    TOP UP SEKARANG
-                </button>
-            </div>
-
-            <div class="game-card bg-slate-800/50 rounded-3xl p-4 flex flex-col items-center text-center">
-                <img src="https://via.placeholder.com/150/1e293b/ffffff?text=Valorant" class="w-full h-32 object-cover rounded-2xl mb-4 shadow-lg">
-                <h3 class="font-bold">Valorant</h3>
-                <p class="text-xs text-gray-400 mb-4">Riot Games</p>
-                <button onclick="addToCart('Valorant', 100000, 'https://via.placeholder.com/150/1e293b/ffffff?text=Valorant')" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-xs font-black transition-all active:scale-95">
-                    TOP UP SEKARANG
-                </button>
-            </div>
-
-            <div class="game-card bg-slate-800/50 rounded-3xl p-4 flex flex-col items-center text-center">
-                <img src="https://via.placeholder.com/150/1e293b/ffffff?text=Genshin" class="w-full h-32 object-cover rounded-2xl mb-4 shadow-lg">
-                <h3 class="font-bold text-sm">Genshin Impact</h3>
-                <p class="text-xs text-gray-400 mb-4">HoYoverse</p>
-                <button onclick="addToCart('Genshin Impact', 120000, 'https://via.placeholder.com/150/1e293b/ffffff?text=Genshin')" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-xs font-black transition-all active:scale-95">
-                    TOP UP SEKARANG
-                </button>
-            </div>
-
-        </div>
-    </div>
-
     <script>
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        
-        function updateCartIcon() {
-            document.getElementById('cart-count').innerText = cart.length;
+        const symbols = ['🀄', '🀅', '🀆', '🀇', '🀈', '🀉', '🀊', '🀋'];
+        let balance = 1071.89;
+        let winRate = 30; // Persentase kemenangan
+        let isSpinning = false;
+
+        const grid = document.getElementById('slotGrid');
+
+        // Create initial tiles
+        function initTiles() {
+            grid.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'mahjong-tile text-green-800';
+                tile.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                grid.appendChild(tile);
+            }
         }
 
-        function addToCart(name, price, img) {
-            const product = { id: Date.now(), name, price, img };
-            cart.push(product);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartIcon();
-            alert(name + " berhasil masuk keranjang!");
+        async function startSpin() {
+            if (isSpinning || balance < 200) return;
+
+            isSpinning = true;
+            balance -= 200; // Bet 200
+            updateUI();
+
+            const tiles = document.querySelectorAll('.mahjong-tile');
+            
+            // Start Animation
+            tiles.forEach(t => t.classList.add('tile-spin'));
+
+            setTimeout(() => {
+                stopSpin(tiles);
+            }, 1200);
         }
 
-        updateCartIcon();
+        function stopSpin(tiles) {
+            const isWinningTurn = (Math.random() * 100) < winRate;
+            const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            
+            tiles.forEach((tile, index) => {
+                tile.classList.remove('tile-spin', 'win-flash');
+                
+                // Jika menang, paksa baris tengah (index 5-9) jadi sama
+                if (isWinningTurn && index >= 5 && index <= 9) {
+                    tile.innerText = winSymbol;
+                    tile.classList.add('win-flash');
+                } else {
+                    tile.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                }
+            });
+
+            if (isWinningTurn) {
+                const prize = 1500 + (Math.random() * 2000);
+                balance += prize;
+                showWin(prize);
+            }
+
+            isSpinning = false;
+            updateUI();
+        }
+
+        function showWin(amount) {
+            const toast = document.getElementById('winToast');
+            document.getElementById('winValue').innerText = "Rp " + amount.toLocaleString('id-ID');
+            document.getElementById('lastWin').innerText = amount.toFixed(2);
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2000);
+        }
+
+        function updateUI() {
+            const formatted = balance.toLocaleString('id-ID', {minimumFractionDigits: 2});
+            document.getElementById('displayBalance').innerText = formatted;
+            document.getElementById('creditText').innerText = formatted;
+        }
+
+        // Admin functions
+        function toggleAdmin() {
+            document.getElementById('adminPanel').classList.toggle('hidden');
+        }
+
+        function saveSettings() {
+            winRate = document.getElementById('winRateRange').value;
+            const extra = parseFloat(document.getElementById('addBalance').value) || 0;
+            balance += extra;
+            document.getElementById('addBalance').value = '';
+            updateUI();
+            toggleAdmin();
+            alert("Settings Updated!");
+        }
+
+        document.getElementById('winRateRange').oninput = function() {
+            document.getElementById('winRateVal').innerText = this.value + "%";
+        }
+
+        initTiles();
+        updateUI();
     </script>
 </body>
 </html>
