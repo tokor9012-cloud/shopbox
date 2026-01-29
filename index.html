@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FALLXD STORE | Top Up Game Tercepat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .game-card:hover { transform: translateY(-8px); border-color: #3b82f6; box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3); }
+        .game-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #1e293b; }
+    </style>
+</head>
+<body class="pb-24">
+
+    <nav class="glass sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black italic tracking-tighter text-blue-500">FALLXD STORE</h1>
+            <div class="flex items-center space-x-6">
+                <a href="index.html" class="hidden md:block text-sm font-bold hover:text-blue-400">BERANDA</a>
+                <a href="keranjang.html" class="relative p-2.5 bg-slate-800 rounded-xl hover:bg-slate-700 transition">
+                    <i class="fas fa-shopping-cart text-lg"></i>
+                    <span id="cart-count" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-slate-900">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-4 mt-4">
+        <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-900 rounded-[2rem] p-8 md:p-12 shadow-2xl">
+            <div class="relative z-10">
+                <span class="bg-blue-400/20 text-blue-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">Promo Terbatas</span>
+                <h2 class="text-3xl md:text-5xl font-black mt-4 leading-tight">ISI DIAMOND <br>HARGA <span class="text-yellow-400">TERMURAH!</span></h2>
+                <p class="mt-4 text-blue-100/70 max-w-md">Nikmati layanan top up otomatis 24 jam dengan berbagai metode pembayaran aman.</p>
+            </div>
+            <i class="fas fa-bolt absolute right-[-20px] top-[-20px] text-[200px] text-white/10 rotate-12"></i>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 mt-12">
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center space-x-3">
+                <div class="w-2 h-8 bg-blue-600 rounded-full"></div>
+                <h2 class="text-xl font-bold uppercase tracking-tighter">Pilih Game Favorit</h2>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
+            
+            <div class="game-card bg-slate-800/50 rounded-3xl p-4 flex flex-col items-center text-center">
+                <img src="https://via.placeholder.com/150/1e293b/ffffff?text=MLBB" class="w-full h-32 object-cover rounded-2xl mb-4 shadow-lg">
+                <h3 class="font-bold">Mobile Legends</h3>
+                <p class="text-xs text-gray-500 mb-4">Moonton</p>
+                <button onclick="addToCart('Mobile Legends', 55000, 'https://via.placeholder.com/150/1e293b/ffffff?text=MLBB')" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-xs font-black transition-all active:scale-95">
+                    TOP UP SEKARANG
+                </button>
+            </div>
+
+            <div class="game-card bg-slate-800/50 rounded-3xl p-4 flex flex-col items-center text-center">
+                <img src="https://via.placeholder.com/150/1e293b/ffffff?text=Free+Fire" class="w-full h-32 object-cover rounded-2xl mb-4 shadow-lg">
+                <h3 class="font-bold">Free Fire</h3>
+                <p class="text-xs text-gray-400 mb-4">Garena</p>
+                <button onclick="addToCart('Free Fire', 20000, 'https://via.placeholder.com/150/1e293b/ffffff?text=Free+Fire')" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-xs font-black transition-all active:scale-95">
+                    TOP UP SEKARANG
+                </button>
+            </div>
+
+            <div class="game-card bg-slate-800/50 rounded-3xl p-4 flex flex-col items-center text-center">
+                <img src="https://via.placeholder.com/150/1e293b/ffffff?text=Valorant" class="w-full h-32 object-cover rounded-2xl mb-4 shadow-lg">
+                <h3 class="font-bold">Valorant</h3>
+                <p class="text-xs text-gray-400 mb-4">Riot Games</p>
+                <button onclick="addToCart('Valorant', 100000, 'https://via.placeholder.com/150/1e293b/ffffff?text=Valorant')" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-xs font-black transition-all active:scale-95">
+                    TOP UP SEKARANG
+                </button>
+            </div>
+
+            <div class="game-card bg-slate-800/50 rounded-3xl p-4 flex flex-col items-center text-center">
+                <img src="https://via.placeholder.com/150/1e293b/ffffff?text=Genshin" class="w-full h-32 object-cover rounded-2xl mb-4 shadow-lg">
+                <h3 class="font-bold text-sm">Genshin Impact</h3>
+                <p class="text-xs text-gray-400 mb-4">HoYoverse</p>
+                <button onclick="addToCart('Genshin Impact', 120000, 'https://via.placeholder.com/150/1e293b/ffffff?text=Genshin')" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-xs font-black transition-all active:scale-95">
+                    TOP UP SEKARANG
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        
+        function updateCartIcon() {
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        function addToCart(name, price, img) {
+            const product = { id: Date.now(), name, price, img };
+            cart.push(product);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartIcon();
+            alert(name + " berhasil masuk keranjang!");
+        }
+
+        updateCartIcon();
+    </script>
+</body>
+</html>
