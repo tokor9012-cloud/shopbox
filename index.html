@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Spaceman Pro VIP - GitHub Edition</title>
+    <title>Spaceman Private Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
         .bg-space { background: radial-gradient(circle at center, #2e1065 0%, #0f172a 100%); }
         #gameCanvas { width: 100%; height: 350px; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
-        .modal-bg { background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
-        .crash-anim { animation: shake 0.2s infinite; color: #ef4444 !important; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, -1px); } }
-        input { background: rgba(15, 23, 42, 0.8) !important; color: #fbbf24 !important; border: 1px solid #334155 !important; padding: 14px; border-radius: 16px; outline: none; width: 100%; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
+        .modal-bg { background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); }
+        input { background: rgba(30, 41, 59, 0.7) !important; color: #fbbf24 !important; border: 1px solid #334155 !important; padding: 14px; border-radius: 16px; outline: none; width: 100%; font-weight: bold; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .crash-text { color: #ef4444 !important; animation: shake 0.3s infinite; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
     </style>
 </head>
 <body class="bg-space h-screen flex flex-col">
 
     <div id="regModal" class="hidden fixed inset-0 z-[100] modal-bg flex items-center justify-center p-6">
-        <div class="glass w-full max-w-sm p-8 rounded-[2rem] border-2 border-blue-500/30">
-            <h2 class="text-2xl font-black text-blue-400 mb-6 text-center italic uppercase">Pendaftaran Akun</h2>
+        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border-2 border-blue-500/30">
+            <h2 class="text-2xl font-black text-blue-400 mb-6 text-center italic uppercase">Daftar Akun</h2>
             <div class="space-y-4">
                 <input type="text" id="regNama" placeholder="Nama Lengkap">
                 <input type="number" id="regHp" placeholder="Nomor WhatsApp">
@@ -34,82 +34,124 @@
     </div>
 
     <div id="profModal" class="hidden fixed inset-0 z-[100] modal-bg flex items-center justify-center p-6">
-        <div class="glass w-full max-w-sm p-8 rounded-[2rem] border-2 border-emerald-500/30 text-center">
-            <div class="w-20 h-20 mx-auto rounded-full border-4 border-emerald-500 mb-4 overflow-hidden">
+        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border-2 border-emerald-500/30 text-center">
+            <div class="w-20 h-20 mx-auto rounded-full border-4 border-emerald-500 mb-4 overflow-hidden shadow-lg shadow-emerald-500/20">
                 <img id="profImg" src="">
             </div>
             <h2 id="profNama" class="text-xl font-black text-white uppercase tracking-wider">Guest</h2>
-            <p id="profHp" class="text-emerald-400 text-sm font-mono mb-6">08xxxxxx</p>
-            <button onclick="prosesLogout()" class="w-full py-4 bg-red-600/20 text-red-500 border border-red-500/50 font-black rounded-2xl mb-3">LOGOUT</button>
-            <button onclick="tutupModal('profModal')" class="text-gray-500 text-xs font-bold">TUTUP</button>
+            <p id="profHp" class="text-emerald-400 text-sm font-mono mb-8">08xxxxxx</p>
+            <button onclick="prosesLogout()" class="w-full py-4 bg-red-600/20 text-red-500 border border-red-500/50 font-black rounded-2xl mb-4 hover:bg-red-600/40 transition-all">LOGOUT AKUN</button>
+            <button onclick="tutupModal('profModal')" class="text-gray-500 text-xs font-bold uppercase tracking-widest">Kembali</button>
         </div>
     </div>
 
-    <div id="ownerModal" class="hidden fixed inset-0 z-[110] modal-bg flex items-center justify-center p-6">
-        <div class="glass w-full max-w-sm p-6 rounded-[2rem] border-2 border-yellow-500">
-            <h2 class="text-xl font-black text-yellow-500 mb-4 italic text-center uppercase">Owner Panel</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] text-gray-400 font-bold ml-1">TARGET CRASH (X)</label>
-                    <input type="number" id="targetInp" value="2.50" step="0.01">
+    <div id="ownerModal" class="hidden fixed inset-0 z-[150] modal-bg flex items-center justify-center p-6">
+        <div class="glass w-full max-w-md p-6 rounded-[2.5rem] border-2 border-yellow-500 shadow-2xl">
+            <h2 class="text-xl font-black text-yellow-500 mb-4 text-center italic uppercase">Owner Dashboard</h2>
+            
+            <div class="mb-6">
+                <p class="text-[10px] text-gray-400 font-bold mb-2 uppercase tracking-widest">Data Pemain Terdaftar (GitHub):</p>
+                <div class="bg-black/40 rounded-2xl overflow-hidden border border-white/5">
+                    <div class="max-h-48 overflow-y-auto no-scrollbar">
+                        <table class="w-full text-left text-[11px]">
+                            <thead class="bg-white/5 text-gray-500 sticky top-0">
+                                <tr><th class="p-3">Nama</th><th class="p-3">WhatsApp</th><th class="p-3">Sandi</th></tr>
+                            </thead>
+                            <tbody id="playerTableBody" class="divide-y divide-white/5">
+                                </tbody>
+                        </table>
+                    </div>
                 </div>
-                <button onclick="saveOwner()" class="w-full py-4 bg-yellow-600 text-black font-black rounded-2xl uppercase">Update System</button>
-                <button onclick="tutupModal('ownerModal')" class="w-full text-gray-500 text-xs font-bold">KELUAR</button>
             </div>
+
+            <div class="space-y-3">
+                <label class="text-[10px] text-gray-400 font-bold ml-1 uppercase">Target Meledak (X)</label>
+                <input type="number" id="targetInp" value="2.50" step="0.01">
+                <button onclick="saveOwner()" class="w-full py-4 bg-yellow-600 text-black font-black rounded-2xl uppercase shadow-lg">Update System</button>
+                <button onclick="tutupModal('ownerModal')" class="w-full text-gray-500 text-xs font-bold uppercase mt-2">Tutup Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="depoModal" class="hidden fixed inset-0 z-[100] modal-bg flex items-center justify-center p-6">
+        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-emerald-500/30 text-center">
+            <h2 class="text-2xl font-black text-emerald-500 mb-6 uppercase">Deposit</h2>
+            <input type="number" id="depoAmount" placeholder="Jumlah Deposit (Rp)" class="mb-4">
+            <button onclick="prosesDepo()" class="w-full py-4 bg-emerald-600 text-white font-black rounded-2xl uppercase">Konfirmasi</button>
+            <button onclick="tutupModal('depoModal')" class="mt-4 text-gray-500 text-xs font-bold uppercase">Batal</button>
+        </div>
+    </div>
+
+    <div id="wdModal" class="hidden fixed inset-0 z-[100] modal-bg flex items-center justify-center p-6">
+        <div class="glass w-full max-w-sm p-8 rounded-[2.5rem] border border-red-500/30 text-center">
+            <h2 class="text-2xl font-black text-red-500 mb-6 uppercase">Withdraw</h2>
+            <input type="number" id="wdAmount" placeholder="Jumlah Penarikan (Rp)" class="mb-4">
+            <button onclick="prosesWD()" class="w-full py-4 bg-red-600 text-white font-black rounded-2xl uppercase">Tarik Saldo</button>
+            <button onclick="tutupModal('wdModal')" class="mt-4 text-gray-500 text-xs font-bold uppercase">Batal</button>
         </div>
     </div>
 
     <header class="p-5 flex justify-between items-center z-50">
-        <button onclick="cekOwner()" class="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full opacity-20"><i class="fas fa-cog"></i></button>
-        <div class="bg-black/60 px-6 py-2 rounded-full border border-blue-500/40 shadow-lg">
-            <span class="text-blue-400 font-bold text-xs mr-1">Rp</span>
+        <button onclick="cekOwner()" class="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full border border-white/10 active:scale-90 transition-all">
+            <i class="fas fa-cog text-gray-600"></i>
+        </button>
+        <div class="bg-black/60 px-6 py-2 rounded-full border border-blue-500/40 shadow-xl">
+            <span class="text-blue-400 font-bold text-xs mr-1 font-mono">Rp</span>
             <span id="balDisplay" class="font-mono font-bold text-sm tracking-widest">0,00</span>
         </div>
-        <button onclick="klikProfil()" class="w-10 h-10 rounded-full border-2 border-emerald-500 overflow-hidden bg-emerald-900/30">
+        <button onclick="klikProfil()" class="w-10 h-10 rounded-full border-2 border-emerald-500 overflow-hidden bg-emerald-900/30 active:scale-90 transition-all">
             <img id="avatarHead" src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest">
         </button>
     </header>
 
-    <div class="relative flex-grow flex flex-col items-center justify-center overflow-hidden">
-        <div id="multDisplay" class="text-8xl font-black text-white z-10 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">1.00x</div>
+    <div class="relative flex-grow flex flex-col items-center justify-center">
+        <div id="multDisplay" class="text-8xl font-black text-white z-10 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]">1.00x</div>
         <div id="statusTag" class="text-[10px] uppercase tracking-[0.5em] text-blue-300 mt-4 font-black">Ready to Launch</div>
         <canvas id="gameCanvas" class="absolute inset-0"></canvas>
         <div id="histBar" class="absolute bottom-10 left-0 w-full flex gap-2 px-6 overflow-x-auto no-scrollbar"></div>
     </div>
 
-    <footer class="bg-[#121826] p-6 rounded-t-[3rem] shadow-2xl border-t border-white/5">
+    <footer class="bg-[#0f172a] p-6 rounded-t-[3.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.5)] border-t border-white/5">
         <div class="grid grid-cols-2 gap-4 mb-6">
-            <div onclick="simulasiDepo()" class="glass p-4 rounded-2xl flex items-center justify-between active:scale-95 transition-all">
-                <div><p class="text-[9px] text-gray-400 font-bold uppercase">Saldo Anda</p><p class="text-emerald-400 font-bold text-xs mt-1">Isi Saldo</p></div>
-                <i class="fas fa-plus-circle text-emerald-500"></i>
-            </div>
-            <div class="glass p-4 rounded-2xl">
-                <p class="text-[9px] text-gray-400 font-bold uppercase text-center mb-1">Bet (Rp)</p>
-                <input type="number" id="betAmount" value="2000" class="!p-0 !bg-transparent !border-none text-center text-yellow-500 font-black text-sm">
-            </div>
+            <button onclick="bukaModal('depoModal')" class="glass py-4 rounded-2xl flex flex-col items-center border-emerald-500/20 active:scale-95 transition-all">
+                <i class="fas fa-wallet text-emerald-500 mb-1"></i><span class="text-[9px] font-bold uppercase">Deposit</span>
+            </button>
+            <button onclick="bukaModal('wdModal')" class="glass py-4 rounded-2xl flex flex-col items-center border-red-500/20 active:scale-95 transition-all">
+                <i class="fas fa-hand-holding-usd text-red-500 mb-1"></i><span class="text-[9px] font-bold uppercase">Withdraw</span>
+            </button>
         </div>
-        <button id="btnMain" onclick="handleMain()" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-xl font-black shadow-xl uppercase tracking-widest active:scale-95 transition-all">Pasang Taruhan</button>
+
+        <div class="glass p-4 rounded-2xl mb-6 flex flex-col items-center">
+            <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Taruhan Terpasang (Rp)</p>
+            <input type="number" id="betAmount" value="2000" class="!p-0 !bg-transparent !border-none text-center text-yellow-500 font-black text-2xl">
+        </div>
+
+        <button id="btnMain" onclick="handleMain()" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-[2rem] text-xl font-black shadow-2xl uppercase tracking-widest active:scale-95 transition-all">Pasang Taruhan</button>
     </footer>
 
     <audio id="sndFly" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" loop></audio>
     <audio id="sndExplode" src="https://assets.mixkit.co/active_storage/sfx/123/123-preview.mp3"></audio>
 
     <script>
+        // --- KONFIGURASI GITHUB (ISI DISINI) ---
+        const GH_TOKEN = "ISI_TOKEN_DISINI";
+        const GH_REPO = "USERNAME/REPO_NAME";
+        const GH_PATH = "database.json";
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const sndFly = document.getElementById('sndFly');
         const sndExplode = document.getElementById('sndExplode');
 
-        // LOCAL DATA
         let user = JSON.parse(localStorage.getItem('sp_user')) || null;
         let balance = parseFloat(localStorage.getItem('sp_bal')) || 0.00;
-        let currentMult = 1.00;
         let targetCrash = 2.50;
+        let currentMult = 1.00;
         let isPlaying = false;
         let isCashedOut = false;
         let animation;
         let pos = { x: 50, y: 280 };
-        let history = ["1.45x", "3.22x", "1.08x"];
+        let historyArr = ["1.05x", "2.50x", "1.12x"];
 
         canvas.width = window.innerWidth;
         canvas.height = 350;
@@ -124,69 +166,83 @@
             document.getElementById('avatarHead').src = avatar;
         }
 
-        function klikProfil() {
-            if(!user) bukaModal('regModal');
-            else {
-                document.getElementById('profNama').innerText = user.nama;
-                document.getElementById('profHp').innerText = user.hp;
-                document.getElementById('profImg').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${user.nama}`;
-                bukaModal('profModal');
-            }
-        }
-
-        function prosesDaftar() {
+        async function prosesDaftar() {
             const nama = document.getElementById('regNama').value;
             const hp = document.getElementById('regHp').value;
-            if(nama && hp) {
-                user = { nama, hp };
-                localStorage.setItem('sp_user', JSON.stringify(user));
-                tutupModal('regModal');
-                updateUI();
-                alert("Berhasil Daftar!");
-            }
+            const pw = document.getElementById('regPass').value;
+
+            if(!nama || !hp || !pw) return alert("Isi semua data!");
+
+            const newPlayer = { nama, hp, pass: pw, tgl: new Date().toLocaleString() };
+            
+            // Simpan ke GitHub (Opsional jika sudah setup GH_TOKEN)
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_PATH}`, {
+                    headers: { "Authorization": `token ${GH_TOKEN}` }
+                });
+                const file = await res.json();
+                let content = JSON.parse(atob(file.content));
+                content.push(newPlayer);
+
+                await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_PATH}`, {
+                    method: "PUT",
+                    headers: { "Authorization": `token ${GH_TOKEN}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: `Daftar: ${nama}`,
+                        content: btoa(JSON.stringify(content, null, 2)),
+                        sha: file.sha
+                    })
+                });
+            } catch(e) { console.log("GitHub Sync skipped/failed"); }
+
+            user = { nama, hp };
+            localStorage.setItem('sp_user', JSON.stringify(user));
+            updateUI(); tutupModal('regModal'); alert("Selamat Datang, " + nama);
         }
 
-        function prosesLogout() {
-            localStorage.removeItem('sp_user');
-            user = null;
-            tutupModal('profModal');
-            updateUI();
+        async function muatDataPemain() {
+            const tbody = document.getElementById('playerTableBody');
+            tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-yellow-500 animate-pulse">Memuat...</td></tr>`;
+            try {
+                const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_PATH}`, {
+                    headers: { "Authorization": `token ${GH_TOKEN}` }
+                });
+                const data = await res.json();
+                const players = JSON.parse(atob(data.content));
+                tbody.innerHTML = "";
+                players.forEach(p => {
+                    tbody.innerHTML += `<tr class="border-b border-white/5"><td class="p-3 text-white">${p.nama}</td><td class="p-3 text-blue-400 font-mono">${p.hp}</td><td class="p-3 text-gray-500 font-mono">${p.pass}</td></tr>`;
+                });
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Gagal ambil data GitHub!</td></tr>`; }
         }
 
-        function simulasiDepo() {
-            const amt = prompt("Masukkan jumlah Deposit (Rp):", "50000");
-            if(amt) { balance += parseFloat(amt); updateUI(); }
+        function prosesLogout() { 
+            if(confirm("Logout?")) { localStorage.removeItem('sp_user'); user = null; updateUI(); tutupModal('profModal'); } 
         }
+
+        function klikProfil() { if(!user) bukaModal('regModal'); else { document.getElementById('profNama').innerText = user.nama; document.getElementById('profHp').innerText = user.hp; document.getElementById('profImg').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${user.nama}`; bukaModal('profModal'); } }
+
+        function prosesDepo() { const a = parseFloat(document.getElementById('depoAmount').value); if(a >= 10000){ balance+=a; updateUI(); tutupModal('depoModal'); alert("Depo Berhasil!"); } }
+        function prosesWD() { const a = parseFloat(document.getElementById('wdAmount').value); if(a <= balance && a >= 50000){ balance-=a; updateUI(); tutupModal('wdModal'); alert("WD Diproses!"); } else { alert("Saldo tidak cukup / Minimal Rp 50.000"); } }
 
         function drawRobot(x, y, state) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Trail
             ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.moveTo(0, 320); ctx.quadraticCurveTo(canvas.width/2, 320, x, y);
             ctx.strokeStyle = state === 'crash' ? '#ef4444' : '#60a5fa'; ctx.lineWidth = 2; ctx.stroke();
-            // Body
-            ctx.fillStyle = state === 'crash' ? '#ef4444' : '#ffffff';
-            ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = (state === 'win') ? '#10b981' : '#3b82f6'; ctx.fillRect(x-12, y+15, 24, 20);
-            if(state !== 'crash') {
-                ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.moveTo(x-8, y+35); ctx.lineTo(x, y+50); ctx.lineTo(x+8, y+35); ctx.fill();
-            }
+            ctx.fillStyle = state === 'crash' ? '#ef4444' : '#ffffff'; ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = state === 'win' ? '#10b981' : '#3b82f6'; ctx.fillRect(x-12, y+15, 24, 22);
+            if(state !== 'crash') { ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.moveTo(x-8, y+37); ctx.lineTo(x, y+52); ctx.lineTo(x+8, y+37); ctx.fill(); }
         }
 
-        function handleMain() {
-            if(!user) return klikProfil();
-            if(!isPlaying) mulaiTerbang();
-            else if(!isCashedOut) laksanakanCashout();
-        }
+        function handleMain() { if(!user) return klikProfil(); if(!isPlaying) mulaiTerbang(); else if(!isCashedOut) laksanakanCashout(); }
 
         function mulaiTerbang() {
             const bet = parseFloat(document.getElementById('betAmount').value);
             if(balance < bet) return alert("Saldo Kurang!");
-            
             isPlaying = true; isCashedOut = false; balance -= bet; updateUI();
             currentMult = 1.00; pos = { x: 50, y: 280 };
             document.getElementById('btnMain').innerText = "CASH OUT";
-            document.getElementById('btnMain').className = "w-full py-5 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl text-xl font-black uppercase";
-            document.getElementById('statusTag').innerText = "Flying...";
+            document.getElementById('btnMain').className = "w-full py-5 bg-gradient-to-r from-orange-500 to-red-600 rounded-[2rem] text-xl font-black";
             sndFly.play(); animate();
         }
 
@@ -203,21 +259,18 @@
         function laksanakanCashout() {
             const bet = parseFloat(document.getElementById('betAmount').value);
             balance += bet * currentMult; isCashedOut = true; updateUI();
-            document.getElementById('btnMain').innerText = "SUDAH CAIR";
+            document.getElementById('btnMain').innerText = "SUCCESS!";
             document.getElementById('btnMain').disabled = true;
-            document.getElementById('btnMain').className = "w-full py-5 bg-gray-700 rounded-2xl text-xl font-black opacity-50";
-            document.getElementById('statusTag').innerText = "Secured!";
+            document.getElementById('btnMain').className = "w-full py-5 bg-slate-700 rounded-[2rem] text-xl font-black opacity-50";
         }
 
         function gameMeledak() {
             isPlaying = false; sndFly.pause(); sndExplode.play();
             cancelAnimationFrame(animation);
-            document.getElementById('multDisplay').classList.add('crash-anim');
-            document.getElementById('statusTag').innerText = "CRASHED!";
+            document.getElementById('multDisplay').classList.add('crash-text');
             drawRobot(pos.x, pos.y, 'crash');
-            history.unshift(currentMult.toFixed(2) + "x");
-            if(history.length > 5) history.pop();
-            renderHist();
+            historyArr.unshift(currentMult.toFixed(2) + "x");
+            if(historyArr.length > 5) historyArr.pop(); renderHist();
             setTimeout(resetGame, 3000);
         }
 
@@ -225,30 +278,21 @@
             document.getElementById('multDisplay').className = "text-8xl font-black text-white z-10 drop-shadow-2xl";
             document.getElementById('btnMain').disabled = false;
             document.getElementById('btnMain').innerText = "Pasang Taruhan";
-            document.getElementById('btnMain').className = "w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-xl font-black uppercase";
-            document.getElementById('statusTag').innerText = "Ready to Launch";
+            document.getElementById('btnMain').className = "w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-[2rem] text-xl font-black";
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawRobot(50, 280, 'idle');
         }
 
         function renderHist() {
-            const bar = document.getElementById('histBar');
-            bar.innerHTML = '';
-            history.forEach(h => {
-                const span = document.createElement('span');
-                span.className = "bg-white/10 border border-white/20 px-4 py-1 rounded-lg text-xs font-bold";
-                span.innerText = h; bar.appendChild(span);
+            const bar = document.getElementById('histBar'); bar.innerHTML = '';
+            historyArr.forEach(h => {
+                const s = document.createElement('span'); s.className = "bg-white/5 border border-white/10 px-4 py-1 rounded-xl text-[10px] font-bold";
+                s.innerText = h; bar.appendChild(s);
             });
         }
 
-        function cekOwner() {
-            if(prompt("Owner PIN:") === "123") bukaModal('ownerModal');
-        }
-
-        function saveOwner() {
-            targetCrash = parseFloat(document.getElementById('targetInp').value);
-            tutupModal('ownerModal');
-        }
+        function cekOwner() { if(prompt("Owner PIN:") === "123") { bukaModal('ownerModal'); muatDataPemain(); } }
+        function saveOwner() { targetCrash = parseFloat(document.getElementById('targetInp').value); tutupModal('ownerModal'); }
 
         updateUI(); renderHist(); drawRobot(50, 280, 'idle');
     </script>
