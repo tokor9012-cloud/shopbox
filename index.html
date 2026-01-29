@@ -3,240 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Spaceman Pro - Admin Separated</title>
+    <title>Spaceman Pro - Full Controller</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        body { background-color: #0f172a; color: white; font-family: sans-serif; overflow: hidden; }
         .bg-space { background: radial-gradient(circle at center, #2e1065 0%, #0f172a 100%); }
-        #gameCanvas { width: 100%; height: 280px; filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.3)); }
-        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .crash-anim { animation: shake 0.5s infinite; }
+        #gameCanvas { width: 100%; height: 320px; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .crash-text { animation: shake 0.5s infinite; color: #ef4444 !important; }
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -2px); }
+            100% { transform: translate(1px, -1px); }
         }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-space h-screen flex flex-col">
 
-    <div id="adminModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95">
-        <div class="glass-panel w-full max-w-md p-6 rounded-3xl border-2 border-yellow-500/50">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-black text-yellow-500 italic"><i class="fas fa-user-shield mr-2"></i>ADMIN CONTROL</h2>
-                <button onclick="closeAdmin()" class="text-gray-400 text-2xl">&times;</button>
-            </div>
-            
-            <div class="space-y-6">
-                <div class="bg-white/5 p-4 rounded-2xl">
-                    <label class="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-widest">Setting Target Tabrak</label>
-                    <div class="flex items-center gap-4">
-                        <input type="number" id="targetInput" value="1.95" step="0.01" class="flex-1 bg-gray-900 text-2xl font-mono text-yellow-400 p-3 rounded-xl border border-gray-700 outline-none">
-                        <span class="text-xl font-bold">x</span>
-                    </div>
-                    <p class="text-[10px] text-gray-500 mt-2">*Robot akan otomatis meledak (crash) di angka ini.</p>
+    <div id="adminModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90">
+        <div class="glass w-full max-w-md p-6 rounded-3xl border-2 border-yellow-500">
+            <h2 class="text-xl font-black text-yellow-500 mb-4 italic text-center">PANEL KONTROL</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase">Target Meledak (X)</label>
+                    <input type="number" id="targetInput" value="1.95" step="0.01" class="w-full bg-gray-900 text-yellow-400 p-3 rounded-xl border border-gray-700 font-mono text-xl outline-none">
                 </div>
-
-                <div class="bg-white/5 p-4 rounded-2xl">
-                    <label class="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-widest">Saldo System</label>
-                    <input type="number" id="balanceInput" placeholder="Tambah Saldo..." class="w-full bg-gray-900 p-3 rounded-xl border border-gray-700 outline-none">
+                <div>
+                    <label class="text-[10px] text-gray-400 font-bold uppercase">Isi Saldo (Rp)</label>
+                    <input type="number" id="balanceInput" placeholder="Contoh: 500000" class="w-full bg-gray-900 text-white p-3 rounded-xl border border-gray-700 font-mono outline-none">
                 </div>
-
-                <button onclick="saveAdmin()" class="w-full py-4 bg-yellow-600 hover:bg-yellow-500 text-black font-black rounded-2xl transition-all shadow-lg shadow-yellow-600/20">
-                    UPDATE SETTING & TERAPKAN
-                </button>
+                <button onclick="saveAdmin()" class="w-full py-4 bg-yellow-600 text-black font-black rounded-2xl shadow-lg uppercase tracking-widest">Update System</button>
+                <button onclick="closeAdmin()" class="w-full py-2 text-gray-500 text-xs italic">Tutup Panel</button>
             </div>
         </div>
     </div>
 
-    <header class="p-4 flex justify-between items-center z-10">
-        <button onclick="openAdmin()" class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full">
+    <header class="p-4 flex justify-between items-center">
+        <button onclick="openAdmin()" class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full border border-white/20">
             <i class="fas fa-cog text-gray-300"></i>
         </button>
-        <div class="flex items-center gap-2 bg-black/40 px-4 py-1.5 rounded-full border border-blue-500/50">
-            <span class="text-blue-400 text-xs font-bold font-mono">Rp</span>
-            <span id="balanceText" class="font-bold text-sm tracking-wider">1.071,89</span>
+        <div class="bg-black/40 px-5 py-1.5 rounded-full border border-blue-500/50">
+            <span class="text-blue-400 text-xs font-bold">Rp</span>
+            <span id="balanceText" class="font-bold text-sm tracking-widest ml-1">1.071,89</span>
         </div>
-        <div class="w-10 h-10 rounded-full overflow-hidden border border-emerald-500">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar">
+        <div class="w-10 h-10 rounded-full border border-emerald-500 overflow-hidden">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Robot" alt="avatar">
         </div>
     </header>
 
     <div class="relative flex-grow flex flex-col items-center justify-center">
-        <div id="multBox" class="text-center z-10 transition-transform">
-            <div id="displayMult" class="text-6xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">1.00x</div>
-            <p id="statusLabel" class="text-[10px] uppercase tracking-[0.3em] text-blue-400 mt-2 font-bold">Terbang...</p>
-        </div>
-
+        <div id="displayMult" class="text-7xl font-black text-white z-10 drop-shadow-2xl">1.00x</div>
+        <p id="statusLabel" class="text-[10px] uppercase tracking-[0.4em] text-blue-300 mt-2 font-black">Tunggu Permainan...</p>
+        
         <canvas id="gameCanvas" class="absolute inset-0"></canvas>
         
-        <div class="absolute bottom-10 left-0 w-full flex gap-2 px-6 overflow-x-auto no-scrollbar">
-            <span class="bg-blue-600/30 border border-blue-500 text-blue-400 px-3 py-1 rounded-lg text-[10px] font-bold">1.50x</span>
-            <span class="bg-purple-600/30 border border-purple-500 text-purple-400 px-3 py-1 rounded-lg text-[10px] font-bold">2.43x</span>
-            <span class="bg-red-600/30 border border-red-500 text-red-400 px-3 py-1 rounded-lg text-[10px] font-bold">1.02x</span>
-        </div>
+        <div id="historyBar" class="absolute bottom-10 left-0 w-full flex gap-2 px-6 overflow-x-auto no-scrollbar">
+            </div>
     </div>
 
     <footer class="bg-[#1e1b4b] p-6 rounded-t-[40px] shadow-2xl">
         <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="bg-black/20 p-3 rounded-2xl border border-gray-700">
-                <label class="text-[9px] text-gray-500 uppercase font-bold">Auto Cashout</label>
-                <div class="flex justify-between items-center mt-1">
-                    <span class="font-mono font-bold">2.00x</span>
-                    <i class="fas fa-angle-right text-gray-600"></i>
-                </div>
+            <div class="glass p-3 rounded-2xl">
+                <p class="text-[9px] text-gray-500 font-black uppercase">Cairkan Otomatis</p>
+                <div class="flex justify-between font-bold mt-1"><span>2.00x</span><i class="fas fa-chevron-right text-gray-700"></i></div>
             </div>
-            <div class="bg-black/20 p-3 rounded-2xl border border-gray-700">
-                <label class="text-[9px] text-gray-500 uppercase font-bold">Amount</label>
-                <div class="flex justify-between items-center mt-1">
-                    <span class="font-mono font-bold text-yellow-500">Rp 2.000</span>
-                    <i class="fas fa-angle-right text-gray-600"></i>
-                </div>
+            <div class="glass p-3 rounded-2xl">
+                <p class="text-[9px] text-gray-500 font-black uppercase">Taruhan</p>
+                <div class="flex justify-between font-bold mt-1 text-yellow-500"><span>Rp 2.000</span><i class="fas fa-chevron-right text-gray-700"></i></div>
             </div>
         </div>
 
-        <button id="mainBtn" onclick="togglePlay()" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-xl font-black shadow-xl shadow-emerald-900/40 active:scale-95 transition-all">
-            BET
+        <button id="actionBtn" onclick="handleAction()" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-xl font-black shadow-xl uppercase tracking-widest active:scale-95 transition-all">
+            Pasang Taruhan
         </button>
-
-        <div class="flex justify-around mt-8 text-gray-500 text-xl">
-            <i class="fas fa-home text-blue-500"></i>
-            <i class="fas fa-history"></i>
-            <i class="fas fa-wallet"></i>
-            <i class="fas fa-user"></i>
-        </div>
     </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const displayMult = document.getElementById('displayMult');
-        const mainBtn = document.getElementById('mainBtn');
-        const statusLabel = document.getElementById('statusLabel');
+        const actionBtn = document.getElementById('actionBtn');
+        const historyBar = document.getElementById('historyBar');
 
+        let balance = 1071.89;
         let targetCrash = 1.95;
         let currentMult = 1.00;
         let isPlaying = false;
-        let robot = { x: 50, y: 200 };
         let animation;
+        let robotPos = { x: 50, y: 250 };
+        let history = ["1.50x", "2.43x", "1.02x"];
 
         canvas.width = window.innerWidth;
-        canvas.height = 280;
+        canvas.height = 320;
 
-        function drawFrame(x, y, crashed = false) {
+        function drawRobot(x, y, state) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw Path Line
+            // Draw Line
             ctx.beginPath();
-            ctx.setLineDash([8, 4]);
-            ctx.moveTo(0, 250);
-            ctx.quadraticCurveTo(canvas.width/2, 250, x, y);
-            ctx.strokeStyle = crashed ? '#ef4444' : '#60a5fa';
-            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(0, 300);
+            ctx.quadraticCurveTo(canvas.width/2, 300, x, y);
+            ctx.strokeStyle = state === 'crash' ? '#ef4444' : '#60a5fa';
+            ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Draw Spaceman (Simple Version)
-            ctx.fillStyle = crashed ? '#ef4444' : '#ffffff';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = crashed ? 'red' : 'cyan';
+            // Draw Astronaut (Simple Version)
+            ctx.fillStyle = (state === 'crash') ? '#ef4444' : (state === 'win' ? '#4ade80' : '#ffffff');
+            ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI*2); ctx.fill(); // Head
+            ctx.fillStyle = '#1e293b'; ctx.fillRect(x-7, y-4, 14, 6); // Visor
+            ctx.fillStyle = (state === 'win') ? '#14532d' : '#3b82f6'; ctx.fillRect(x-10, y+12, 20, 18); // Body
             
-            // Robot Head
-            ctx.beginPath();
-            ctx.arc(x, y, 12, 0, Math.PI * 2);
-            ctx.fill();
-            // Body
-            ctx.fillRect(x-8, y+10, 16, 18);
-            
-            ctx.shadowBlur = 0;
+            if(state === 'flying') {
+                ctx.fillStyle = '#f59e0b'; // Jet fire
+                ctx.beginPath(); ctx.moveTo(x-6, y+30); ctx.lineTo(x, y+45); ctx.lineTo(x+6, y+30); ctx.fill();
+            }
         }
 
-        function togglePlay() {
-            if (isPlaying) return;
-            startFlight();
+        function handleAction() {
+            if (!isPlaying) {
+                startGame();
+            } else {
+                cashOut();
+            }
         }
 
-        function startFlight() {
+        function startGame() {
+            if(balance < 2) return alert("Saldo tidak cukup!");
+            
             isPlaying = true;
-            currentMult = 1.00;
-            robot = { x: 50, y: 220 };
+            balance -= 2; // Simulasi Rp 2.000
+            updateUI();
             
-            mainBtn.innerText = "CASH OUT";
-            mainBtn.classList.replace('from-emerald-500', 'from-orange-500');
-            mainBtn.classList.replace('to-teal-600', 'to-red-600');
-            statusLabel.innerText = "Terbang...";
-            statusLabel.classList.replace('text-red-500', 'text-blue-400');
+            currentMult = 1.00;
+            robotPos = { x: 50, y: 250 };
+            
+            actionBtn.innerText = "Cash Out";
+            actionBtn.className = "w-full py-5 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl text-xl font-black shadow-xl uppercase tracking-widest transition-all";
+            document.getElementById('statusLabel').innerText = "Terbang...";
             
             animate();
         }
 
         function animate() {
             if (currentMult >= targetCrash) {
-                crash();
+                crashGame();
                 return;
             }
 
             currentMult += 0.01;
             displayMult.innerText = currentMult.toFixed(2) + "x";
+            
+            robotPos.x += (canvas.width / (targetCrash * 100)) * 0.8;
+            robotPos.y -= (220 / (targetCrash * 100)) * 0.8;
 
-            // Movement Logic
-            robot.x += (canvas.width / (targetCrash * 100)) * 0.9;
-            robot.y -= (180 / (targetCrash * 100)) * 0.9;
-
-            drawFrame(robot.x, robot.y);
+            drawRobot(robotPos.x, robotPos.y, 'flying');
             animation = requestAnimationFrame(animate);
         }
 
-        function crash() {
+        function cashOut() {
+            const win = 2 * currentMult;
+            balance += win;
             isPlaying = false;
             cancelAnimationFrame(animation);
             
-            displayMult.classList.add('text-red-500', 'crash-anim');
-            statusLabel.innerText = "CRASHED!";
-            statusLabel.classList.replace('text-blue-400', 'text-red-500');
+            displayMult.classList.add('text-green-400');
+            document.getElementById('statusLabel').innerText = "BERHASIL CAIR!";
+            drawRobot(robotPos.x, robotPos.y, 'win');
             
-            drawFrame(robot.x, robot.y, true);
+            updateUI();
+            addHistory(currentMult.toFixed(2) + "x");
+            
+            actionBtn.disabled = true;
+            actionBtn.className = "w-full py-5 bg-gray-700 rounded-2xl text-xl font-black opacity-50 uppercase";
+            setTimeout(resetGame, 3000);
+        }
 
-            setTimeout(() => {
-                resetGame();
-            }, 3000);
+        function crashGame() {
+            isPlaying = false;
+            cancelAnimationFrame(animation);
+            
+            displayMult.classList.add('crash-text');
+            document.getElementById('statusLabel').innerText = "CRASHED!";
+            drawRobot(robotPos.x, robotPos.y, 'crash');
+            
+            addHistory(currentMult.toFixed(2) + "x");
+            
+            actionBtn.disabled = true;
+            actionBtn.className = "w-full py-5 bg-gray-700 rounded-2xl text-xl font-black opacity-50 uppercase";
+            setTimeout(resetGame, 3000);
         }
 
         function resetGame() {
             displayMult.innerText = "1.00x";
-            displayMult.classList.remove('text-red-500', 'crash-anim');
-            mainBtn.innerText = "BET";
-            mainBtn.classList.replace('from-orange-500', 'from-emerald-500');
-            mainBtn.classList.replace('to-red-600', 'to-teal-600');
-            statusLabel.innerText = "Tunggu Putaran...";
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawFrame(50, 220);
-        }
-
-        // Admin Separated Logic
-        function openAdmin() {
-            document.getElementById('adminModal').classList.remove('hidden');
-        }
-
-        function closeAdmin() {
-            document.getElementById('adminModal').classList.add('hidden');
-        }
-
-        function saveAdmin() {
-            const newTarget = document.getElementById('targetInput').value;
-            const newBalance = document.getElementById('balanceInput').value;
+            displayMult.className = "text-7xl font-black text-white z-10 drop-shadow-2xl";
             
-            targetCrash = parseFloat(newTarget);
-            if(newBalance) {
-                document.getElementById('balanceText').innerText = parseFloat(newBalance).toLocaleString('id-ID');
-            }
-
-            closeAdmin();
-            alert("Sistem Diperbarui! Target Tabrak: " + targetCrash + "x");
+            actionBtn.disabled = false;
+            actionBtn.innerText = "Pasang Taruhan";
+            actionBtn.className = "w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-xl font-black shadow-xl uppercase tracking-widest transition-all";
+            
+            document.getElementById('statusLabel').innerText = "Tunggu Permainan...";
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawRobot(50, 250, 'idle');
         }
 
-        // Initial View
-        drawFrame(50, 220);
+        function addHistory(val) {
+            history.unshift(val);
+            if(history.length > 8) history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyBar.innerHTML = '';
+            history.forEach(item => {
+                const v = parseFloat(item);
+                let color = "bg-blue-600/30 border-blue-500 text-blue-400";
+                if(v >= 2) color = "bg-purple-600/30 border-purple-500 text-purple-400";
+                if(v < 1.2) color = "bg-red-600/30 border-red-500 text-red-400";
+                
+                const span = document.createElement('span');
+                span.className = `${color} border px-3 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap`;
+                span.innerText = item;
+                historyBar.appendChild(span);
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('balanceText').innerText = balance.toLocaleString('id-ID', {minimumFractionDigits: 2});
+        }
+
+        function openAdmin() { document.getElementById('adminModal').classList.remove('hidden'); }
+        function closeAdmin() { document.getElementById('adminModal').classList.add('hidden'); }
+        function saveAdmin() {
+            targetCrash = parseFloat(document.getElementById('targetInput').value);
+            const extra = document.getElementById('balanceInput').value;
+            if(extra) { balance = parseFloat(extra); updateUI(); }
+            closeAdmin();
+        }
+
+        renderHistory();
+        updateUI();
+        drawRobot(50, 250, 'idle');
     </script>
 </body>
 </html>
