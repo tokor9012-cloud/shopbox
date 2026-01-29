@@ -3,117 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VM777 - Mahjong Ways 2 Simulator</title>
+    <title>VM777 Mahjong Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #1a1c2e; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
+        body { background-color: #141624; color: white; font-family: sans-serif; overflow: hidden; }
+        
+        /* Mahjong Tile Design */
         .mahjong-tile { 
-            background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
-            border-radius: 6px;
-            box-shadow: inset 0 -4px 0 #ccc, 0 2px 4px rgba(0,0,0,0.5);
-            display: flex; justify-content: center; items-center; font-size: 2.5rem;
-            transition: transform 0.1s;
+            background: #ffffff;
+            border-radius: 4px;
+            box-shadow: inset 0 -3px 0 #bdc3c7, 0 2px 4px rgba(0,0,0,0.4);
+            display: flex; justify-content: center; items-center; 
+            font-size: 2.2rem;
+            color: #2d5a27;
+            transition: all 0.1s ease-in-out;
+            border: 1px solid #dcdde1;
         }
-        .tile-spin { animation: blurSpin 0.1s infinite linear; }
-        @keyframes blurSpin {
-            0% { filter: blur(0px); transform: translateY(0); }
-            50% { filter: blur(4px); transform: translateY(5px); }
-            100% { filter: blur(0px); transform: translateY(0); }
+
+        /* Gerakan Perlahan Tanpa Blur */
+        .tile-moving {
+            transform: translateY(3px);
+            background: #f9f9f9;
+            filter: brightness(0.95);
         }
-        .win-flash { animation: flash 0.5s infinite; border: 3px solid #fbbf24 !important; }
-        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .win-flash { 
+            animation: winAnimate 0.4s infinite; 
+            border: 3px solid #f1c40f !important; 
+            background: #fff9c4 !important;
+            z-index: 10;
+        }
+
+        @keyframes winAnimate {
+            0% { transform: scale(1); box-shadow: 0 0 5px #f1c40f; }
+            50% { transform: scale(1.08); box-shadow: 0 0 15px #f1c40f; }
+            100% { transform: scale(1); box-shadow: 0 0 5px #f1c40f; }
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="pb-20">
+<body class="flex flex-col h-screen">
 
-    <div id="adminPanel" class="hidden fixed inset-0 bg-black/90 z-[100] p-6">
-        <h2 class="text-xl font-bold mb-4 text-yellow-400">Setting Control</h2>
-        <div class="space-y-4">
+    <div id="adminPanel" class="hidden fixed inset-0 bg-black/95 z-[100] p-8">
+        <h2 class="text-2xl font-bold mb-6 text-yellow-500 italic">SYSTEM SETTING</h2>
+        <div class="space-y-6">
             <div>
-                <label class="block text-sm">Win Rate (%) - Peluang Menang</label>
-                <input type="range" id="winRateRange" min="0" max="100" value="30" class="w-full">
-                <span id="winRateVal">30%</span>
+                <label class="block text-sm mb-2">Win Rate (Persentase Gacor): <span id="winRateVal" class="text-yellow-400 font-bold">30%</span></label>
+                <input type="range" id="winRateRange" min="0" max="100" value="30" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
             </div>
             <div>
-                <label class="block text-sm">Tambah Saldo (Rp)</label>
-                <input type="number" id="addBalance" class="bg-gray-800 w-full p-2 rounded" placeholder="100000">
+                <label class="block text-sm mb-2">Inject Saldo (Rp)</label>
+                <input type="number" id="addBalance" class="bg-gray-800 w-full p-3 rounded border border-gray-600 outline-none focus:border-yellow-500" placeholder="Contoh: 500000">
             </div>
-            <button onclick="saveSettings()" class="bg-green-600 w-full py-2 rounded font-bold">SIMPAN & TUTUP</button>
+            <button onclick="saveSettings()" class="bg-yellow-600 hover:bg-yellow-500 w-full py-3 rounded-xl font-black transition-colors">UPDATE SYSTEM</button>
+            <button onclick="toggleAdmin()" class="w-full py-2 text-gray-400 text-sm italic">Batal</button>
         </div>
     </div>
 
-    <header class="p-4 flex justify-between items-center bg-[#1a1c2e] sticky top-0 z-50 border-b border-gray-800">
+    <header class="p-4 flex justify-between items-center bg-[#1a1c2e] border-b border-gray-800">
         <div class="flex items-center gap-2" onclick="toggleAdmin()">
-            <i class="fas fa-bars text-xl"></i>
-            <h1 class="text-2xl font-black italic text-yellow-400 cursor-pointer">VM777</h1>
+            <i class="fas fa-bars text-xl text-gray-400"></i>
+            <h1 class="text-2xl font-black italic text-yellow-400 cursor-pointer tracking-tighter">VM777</h1>
         </div>
-        <div class="flex items-center gap-2 bg-[#2d325a] px-3 py-1 rounded-full border border-blue-500/30">
-            <span class="text-xs text-blue-400">Rp</span>
-            <span id="displayBalance" class="font-bold text-sm">1.071,89</span>
-            <i class="fas fa-wallet text-blue-400 ml-1 text-xs"></i>
+        <div class="flex items-center gap-2 bg-[#00000050] px-4 py-1.5 rounded-full border border-blue-900">
+            <span class="text-[10px] text-blue-400 font-bold">Rp</span>
+            <span id="displayBalance" class="font-bold text-sm">17.420,708</span>
+            <i class="fas fa-plus-circle text-blue-500 text-xs ml-1"></i>
         </div>
     </header>
 
-    <div id="gameScreen" class="p-2 mt-2">
-        <div class="relative bg-red-900/40 rounded-xl p-3 border-2 border-yellow-600 shadow-2xl overflow-hidden">
-            <div class="flex justify-around mb-2 bg-emerald-900/60 rounded py-1 text-xs font-bold text-emerald-400 border border-emerald-500/30">
-                <span>x1</span><span>x2</span><span>x3</span><span class="text-yellow-400 text-sm">x5</span>
-            </div>
+    <main class="flex-grow flex flex-col p-3 gap-2">
+        <div class="flex justify-around items-center bg-gradient-to-r from-teal-900 to-emerald-900 rounded-lg py-1 border border-emerald-500/30 text-xs font-bold shadow-lg">
+            <span class="text-teal-400">x1</span>
+            <span class="text-teal-400">x2</span>
+            <span class="text-teal-400">x3</span>
+            <span class="text-yellow-400 text-sm">x5</span>
+        </div>
 
-            <div id="slotGrid" class="grid grid-cols-5 gap-1.5 h-80">
+        <div class="relative bg-[#2c0b0e] rounded-xl p-2 border-2 border-[#8e44ad60] shadow-2xl">
+            <div id="slotGrid" class="grid grid-cols-5 gap-1.5 h-[320px]">
                 </div>
 
-            <div id="winToast" class="hidden absolute inset-0 flex items-center justify-center bg-black/60 z-10">
-                <div class="text-center animate-bounce">
-                    <p class="text-yellow-400 font-black text-3xl">BIG WIN!</p>
-                    <p id="winValue" class="text-white text-xl font-bold">Rp 0</p>
+            <div id="winToast" class="hidden absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px] z-50">
+                <div class="text-center transform scale-110">
+                    <p class="text-yellow-400 font-black text-4xl italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">WIN!</p>
+                    <p id="winValue" class="text-white text-2xl font-bold bg-black/50 px-4 rounded-full mt-2 tracking-wide">Rp 0</p>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-2 mt-4">
-            <div class="bg-black/40 p-2 rounded border border-gray-700 text-center">
-                <p class="text-[9px] text-gray-400 uppercase">Total Taruhan</p>
-                <p class="text-blue-400 font-bold text-xs">200.00</p>
+        <div class="grid grid-cols-3 gap-2 text-[10px] mt-2">
+            <div class="bg-[#1c1e2d] p-2 rounded border border-gray-800 text-center">
+                <span class="text-gray-500 block mb-1 uppercase">Total Taruhan</span>
+                <span class="text-blue-400 font-bold text-sm">200.00</span>
             </div>
-            <div class="bg-black/40 p-2 rounded border border-gray-700 text-center">
-                <p class="text-[9px] text-gray-400 uppercase">Kemenangan</p>
-                <p id="lastWin" class="text-green-400 font-bold text-xs">0.00</p>
+            <div class="bg-[#1c1e2d] p-2 rounded border border-gray-800 text-center">
+                <span class="text-gray-500 block mb-1 uppercase">Kemenangan</span>
+                <span id="lastWin" class="text-emerald-400 font-bold text-sm">0.00</span>
             </div>
-            <div class="bg-black/40 p-2 rounded border border-gray-700 text-center">
-                <p class="text-[9px] text-gray-400 uppercase">Sisa Kredit</p>
-                <p id="creditText" class="text-yellow-400 font-bold text-xs italic">1.071,89</p>
+            <div class="bg-[#1c1e2d] p-2 rounded border border-gray-800 text-center">
+                <span class="text-gray-500 block mb-1 uppercase">Sisa Kredit</span>
+                <span id="creditText" class="text-yellow-500 font-bold text-sm">17.420,708</span>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div class="flex justify-center items-center gap-6 mt-6">
-        <div class="flex flex-col items-center opacity-50">
-            <div class="w-10 h-10 rounded-full border border-gray-500 flex items-center justify-center">
-                <i class="fas fa-bolt text-yellow-500"></i>
+    <div class="p-6 flex justify-between items-center bg-[#141624] relative">
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-yellow-600">
+                <i class="fas fa-bolt"></i>
             </div>
-            <span class="text-[10px] mt-1 uppercase">Turbo</span>
+            <span class="text-[9px] mt-1 text-gray-500">TURBO</span>
         </div>
 
-        <button id="spinBtn" onclick="startSpin()" class="relative group">
-            <div class="absolute -inset-2 bg-yellow-500 rounded-full blur opacity-30 group-active:opacity-60"></div>
-            <div class="relative w-20 h-20 bg-gradient-to-t from-emerald-700 to-emerald-400 rounded-full border-4 border-white shadow-xl flex items-center justify-center">
-                <i class="fas fa-sync-alt text-3xl text-white group-active:rotate-180 transition-transform duration-500"></i>
+        <button id="spinBtn" onclick="startSpin()" class="relative active:scale-90 transition-transform">
+            <div class="absolute inset-0 bg-emerald-500 blur-xl opacity-20"></div>
+            <div class="w-20 h-20 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-700 border-4 border-white shadow-2xl flex items-center justify-center">
+                <i id="spinIcon" class="fas fa-sync-alt text-3xl text-white"></i>
             </div>
         </button>
 
-        <div class="flex flex-col items-center opacity-50">
-            <div class="w-10 h-10 rounded-full border border-gray-500 flex items-center justify-center">
-                <i class="fas fa-play text-gray-300"></i>
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400">
+                <i class="fas fa-play"></i>
             </div>
-            <span class="text-[10px] mt-1 uppercase">Auto</span>
+            <span class="text-[9px] mt-1 text-gray-500">AUTO</span>
         </div>
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-[#1a1c2e] border-t border-gray-800 flex justify-around p-3 text-[10px] text-gray-400 z-[60]">
-        <div class="flex flex-col items-center text-blue-400">
+    <nav class="flex justify-around p-3 bg-[#1a1c2e] border-t border-gray-800 text-[10px] text-gray-400">
+        <div class="flex flex-col items-center text-blue-500">
             <i class="fas fa-home text-lg"></i>
             <span class="mt-1">Favorit</span>
         </div>
@@ -121,56 +142,69 @@
             <i class="fas fa-wallet text-lg"></i>
             <span class="mt-1">Deposit</span>
         </div>
-        <div class="flex flex-col items-center font-bold text-white">
+        <div class="flex flex-col items-center text-red-500 font-bold">
             <i class="fas fa-sign-out-alt text-lg"></i>
-            <span class="mt-1 uppercase text-red-500">Keluar</span>
+            <span class="mt-1 uppercase">Keluar</span>
         </div>
     </nav>
 
     <script>
         const symbols = ['🀄', '🀅', '🀆', '🀇', '🀈', '🀉', '🀊', '🀋'];
-        let balance = 1071.89;
-        let winRate = 30; // Persentase kemenangan
+        let balance = 17420708;
+        let winRate = 30; 
         let isSpinning = false;
 
         const grid = document.getElementById('slotGrid');
 
-        // Create initial tiles
         function initTiles() {
             grid.innerHTML = '';
             for (let i = 0; i < 20; i++) {
                 const tile = document.createElement('div');
-                tile.className = 'mahjong-tile text-green-800';
+                tile.className = 'mahjong-tile';
                 tile.innerText = symbols[Math.floor(Math.random() * symbols.length)];
                 grid.appendChild(tile);
             }
         }
 
-        async function startSpin() {
+        function startSpin() {
             if (isSpinning || balance < 200) return;
 
             isSpinning = true;
-            balance -= 200; // Bet 200
+            balance -= 200;
             updateUI();
+            
+            const spinIcon = document.getElementById('spinIcon');
+            spinIcon.classList.add('fa-spin');
 
             const tiles = document.querySelectorAll('.mahjong-tile');
-            
-            // Start Animation
-            tiles.forEach(t => t.classList.add('tile-spin'));
+            let spinCount = 0;
+            const maxSpins = 12; // Jumlah pergantian simbol
 
-            setTimeout(() => {
-                stopSpin(tiles);
-            }, 1200);
+            // Logika Gerakan Perlahan
+            const spinInterval = setInterval(() => {
+                tiles.forEach(tile => {
+                    tile.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                    tile.classList.add('tile-moving');
+                    tile.classList.remove('win-flash');
+                });
+                
+                spinCount++;
+                if (spinCount >= maxSpins) {
+                    clearInterval(spinInterval);
+                    finalizeResult(tiles);
+                }
+            }, 120); // Kecepatan putaran (perlahan)
         }
 
-        function stopSpin(tiles) {
+        function finalizeResult(tiles) {
             const isWinningTurn = (Math.random() * 100) < winRate;
             const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            const spinIcon = document.getElementById('spinIcon');
             
             tiles.forEach((tile, index) => {
-                tile.classList.remove('tile-spin', 'win-flash');
+                tile.classList.remove('tile-moving');
                 
-                // Jika menang, paksa baris tengah (index 5-9) jadi sama
+                // Jika disetting menang, buat baris kedua jadi sama
                 if (isWinningTurn && index >= 5 && index <= 9) {
                     tile.innerText = winSymbol;
                     tile.classList.add('win-flash');
@@ -180,11 +214,12 @@
             });
 
             if (isWinningTurn) {
-                const prize = 1500 + (Math.random() * 2000);
+                const prize = 2000 + (Math.random() * 5000);
                 balance += prize;
                 showWin(prize);
             }
 
+            spinIcon.classList.remove('fa-spin');
             isSpinning = false;
             updateUI();
         }
@@ -198,12 +233,11 @@
         }
 
         function updateUI() {
-            const formatted = balance.toLocaleString('id-ID', {minimumFractionDigits: 2});
+            const formatted = balance.toLocaleString('id-ID');
             document.getElementById('displayBalance').innerText = formatted;
             document.getElementById('creditText').innerText = formatted;
         }
 
-        // Admin functions
         function toggleAdmin() {
             document.getElementById('adminPanel').classList.toggle('hidden');
         }
@@ -215,7 +249,6 @@
             document.getElementById('addBalance').value = '';
             updateUI();
             toggleAdmin();
-            alert("Settings Updated!");
         }
 
         document.getElementById('winRateRange').oninput = function() {
