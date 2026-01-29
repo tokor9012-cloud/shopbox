@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keranjang Saya | FALLXD STORE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; color: white; }
+        .card { background-color: #1e293b; border: 1px solid #334155; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-black italic tracking-tighter text-blue-500">KERANJANG</h1>
+            <a href="index.html" class="bg-slate-800 px-4 py-2 rounded-xl text-sm font-bold border border-slate-700">Kembali</a>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="card p-6 rounded-3xl">
+                    <h2 class="font-bold mb-4 flex items-center"><i class="fas fa-user-edit mr-2 text-blue-500"></i> Lengkapi Data Akun</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="user-id" placeholder="User ID" class="bg-slate-900 p-3 rounded-xl border border-slate-700 outline-none focus:border-blue-500">
+                        <input type="text" id="zone-id" placeholder="Zone ID" class="bg-slate-900 p-3 rounded-xl border border-slate-700 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div id="cart-list" class="space-y-4">
+                    </div>
+            </div>
+
+            <div class="card p-6 rounded-3xl h-fit sticky top-8">
+                <h3 class="font-bold text-xl mb-6 border-b border-slate-700 pb-3 italic">Rincian Pembayaran</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between text-gray-400"><span>Harga</span> <span id="subtotal">Rp 0</span></div>
+                    <div class="flex justify-between text-gray-400"><span>Admin</span> <span class="text-blue-500">Rp 1.000</span></div>
+                    <div class="flex justify-between text-gray-400 border-b border-slate-700 pb-3"><span>Promo</span> <span id="promo-text" class="text-green-500">- Rp 0</span></div>
+                    <div class="flex justify-between text-2xl font-black pt-2 uppercase"><span>Total</span> <span id="total-price" class="text-orange-500">Rp 0</span></div>
+                </div>
+
+                <div class="mt-6">
+                    <input type="text" id="promo-input" placeholder="Kode Promo" class="w-full bg-slate-900 p-2 rounded-lg text-sm border border-slate-700 mb-2">
+                    <button onclick="applyPromo()" class="w-full bg-slate-700 py-2 rounded-lg text-xs font-bold hover:bg-slate-600">Gunakan Kode</button>
+                </div>
+
+                <button onclick="checkout()" class="w-full bg-blue-600 mt-6 py-4 rounded-2xl font-black text-lg hover:bg-blue-700 transition shadow-lg shadow-blue-500/20">
+                    BAYAR SEKARANG
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let discount = 0;
+        const adminFee = 1000;
+
+        function renderCart() {
+            const list = document.getElementById('cart-list');
+            list.innerHTML = '';
+            let subtotal = 0;
+
+            if(cart.length === 0) {
+                list.innerHTML = '<div class="text-center py-10 text-gray-500">Keranjang kamu kosong...</div>';
+            }
+
+            cart.forEach((item, index) => {
+                subtotal += item.price;
+                list.innerHTML += `
+                    <div class="card p-4 rounded-2xl flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <img src="${item.img}" class="w-16 h-16 rounded-xl border border-slate-700">
+                            <div>
+                                <h4 class="font-bold">${item.name}</h4>
+                                <p class="text-blue-400 font-bold">Rp ${item.price.toLocaleString('id-ID')}</p>
+                            </div>
+                        </div>
+                        <button onclick="removeItem(${index})" class="text-slate-500 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+            });
+
+            const total = subtotal + adminFee - discount;
+            document.getElementById('subtotal').innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+            document.getElementById('total-price').innerText = 'Rp ' + (total < 0 ? 0 : total).toLocaleString('id-ID');
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        function applyPromo() {
+            if(document.getElementById('promo-input').value === "HEMAT") {
+                discount = 5000;
+                document.getElementById('promo-text').innerText = "- Rp 5.000";
+                renderCart();
+            } else {
+                alert("Voucher salah!");
+            }
+        }
+
+        function checkout() {
+            const userId = document.getElementById('user-id').value;
+            const total = document.getElementById('total-price').innerText;
+            if(!userId) return alert("Isi User ID dulu!");
+            
+            const message = `Halo Admin, saya mau bayar pesanan %0A%0AUser ID: ${userId}%0ATotal: ${total}`;
+            window.open(`https://wa.me/628123456789?text=${message}`);
+        }
+
+        renderCart();
+    </script>
+</body>
+</html>
