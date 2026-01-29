@@ -3,260 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MAS R SLOT</title>
+    <title>Spaceman Pro - Admin Separated</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #141624; color: white; font-family: sans-serif; overflow: hidden; }
-        
-        /* Mahjong Tile Design */
-        .mahjong-tile { 
-            background: #ffffff;
-            border-radius: 4px;
-            box-shadow: inset 0 -3px 0 #bdc3c7, 0 2px 4px rgba(0,0,0,0.4);
-            display: flex; justify-content: center; items-center; 
-            font-size: 2.2rem;
-            color: #2d5a27;
-            transition: all 0.1s ease-in-out;
-            border: 1px solid #dcdde1;
+        body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        .bg-space { background: radial-gradient(circle at center, #2e1065 0%, #0f172a 100%); }
+        #gameCanvas { width: 100%; height: 280px; filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.3)); }
+        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .crash-anim { animation: shake 0.5s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
-
-        /* Gerakan Perlahan Tanpa Blur */
-        .tile-moving {
-            transform: translateY(3px);
-            background: #f9f9f9;
-            filter: brightness(0.95);
-        }
-
-        .win-flash { 
-            animation: winAnimate 0.4s infinite; 
-            border: 3px solid #f1c40f !important; 
-            background: #fff9c4 !important;
-            z-index: 10;
-        }
-
-        @keyframes winAnimate {
-            0% { transform: scale(1); box-shadow: 0 0 5px #f1c40f; }
-            50% { transform: scale(1.08); box-shadow: 0 0 15px #f1c40f; }
-            100% { transform: scale(1); box-shadow: 0 0 5px #f1c40f; }
-        }
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="flex flex-col h-screen">
+<body class="bg-space h-screen flex flex-col">
 
-    <div id="adminPanel" class="hidden fixed inset-0 bg-black/95 z-[100] p-8">
-        <h2 class="text-2xl font-bold mb-6 text-yellow-500 italic">SYSTEM SETTING</h2>
-        <div class="space-y-6">
-            <div>
-                <label class="block text-sm mb-2">Win Rate (Persentase Gacor): <span id="winRateVal" class="text-yellow-400 font-bold">30%</span></label>
-                <input type="range" id="winRateRange" min="0" max="100" value="30" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+    <div id="adminModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95">
+        <div class="glass-panel w-full max-w-md p-6 rounded-3xl border-2 border-yellow-500/50">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-yellow-500 italic"><i class="fas fa-user-shield mr-2"></i>ADMIN CONTROL</h2>
+                <button onclick="closeAdmin()" class="text-gray-400 text-2xl">&times;</button>
             </div>
-            <div>
-                <label class="block text-sm mb-2">Inject Saldo (Rp)</label>
-                <input type="number" id="addBalance" class="bg-gray-800 w-full p-3 rounded border border-gray-600 outline-none focus:border-yellow-500" placeholder="Contoh: 500000">
+            
+            <div class="space-y-6">
+                <div class="bg-white/5 p-4 rounded-2xl">
+                    <label class="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-widest">Setting Target Tabrak</label>
+                    <div class="flex items-center gap-4">
+                        <input type="number" id="targetInput" value="1.95" step="0.01" class="flex-1 bg-gray-900 text-2xl font-mono text-yellow-400 p-3 rounded-xl border border-gray-700 outline-none">
+                        <span class="text-xl font-bold">x</span>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2">*Robot akan otomatis meledak (crash) di angka ini.</p>
+                </div>
+
+                <div class="bg-white/5 p-4 rounded-2xl">
+                    <label class="block text-sm text-gray-400 mb-2 font-bold uppercase tracking-widest">Saldo System</label>
+                    <input type="number" id="balanceInput" placeholder="Tambah Saldo..." class="w-full bg-gray-900 p-3 rounded-xl border border-gray-700 outline-none">
+                </div>
+
+                <button onclick="saveAdmin()" class="w-full py-4 bg-yellow-600 hover:bg-yellow-500 text-black font-black rounded-2xl transition-all shadow-lg shadow-yellow-600/20">
+                    UPDATE SETTING & TERAPKAN
+                </button>
             </div>
-            <button onclick="saveSettings()" class="bg-yellow-600 hover:bg-yellow-500 w-full py-3 rounded-xl font-black transition-colors">UPDATE SYSTEM</button>
-            <button onclick="toggleAdmin()" class="w-full py-2 text-gray-400 text-sm italic">Batal</button>
         </div>
     </div>
 
-    <header class="p-4 flex justify-between items-center bg-[#1a1c2e] border-b border-gray-800">
-        <div class="flex items-center gap-2" onclick="toggleAdmin()">
-            <i class="fas fa-bars text-xl text-gray-400"></i>
-            <h1 class="text-2xl font-black italic text-yellow-400 cursor-pointer tracking-tighter">MAS ARDIL TUKLABAN</h1>
+    <header class="p-4 flex justify-between items-center z-10">
+        <button onclick="openAdmin()" class="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full">
+            <i class="fas fa-cog text-gray-300"></i>
+        </button>
+        <div class="flex items-center gap-2 bg-black/40 px-4 py-1.5 rounded-full border border-blue-500/50">
+            <span class="text-blue-400 text-xs font-bold font-mono">Rp</span>
+            <span id="balanceText" class="font-bold text-sm tracking-wider">1.071,89</span>
         </div>
-        <div class="flex items-center gap-2 bg-[#00000050] px-4 py-1.5 rounded-full border border-blue-900">
-            <span class="text-[10px] text-blue-400 font-bold">Rp</span>
-            <span id="displayBalance" class="font-bold text-sm">17.420,708</span>
-            <i class="fas fa-plus-circle text-blue-500 text-xs ml-1"></i>
+        <div class="w-10 h-10 rounded-full overflow-hidden border border-emerald-500">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar">
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col p-3 gap-2">
-        <div class="flex justify-around items-center bg-gradient-to-r from-teal-900 to-emerald-900 rounded-lg py-1 border border-emerald-500/30 text-xs font-bold shadow-lg">
-            <span class="text-teal-400">x1</span>
-            <span class="text-teal-400">x2</span>
-            <span class="text-teal-400">x3</span>
-            <span class="text-yellow-400 text-sm">x5</span>
+    <div class="relative flex-grow flex flex-col items-center justify-center">
+        <div id="multBox" class="text-center z-10 transition-transform">
+            <div id="displayMult" class="text-6xl font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">1.00x</div>
+            <p id="statusLabel" class="text-[10px] uppercase tracking-[0.3em] text-blue-400 mt-2 font-bold">Terbang...</p>
         </div>
 
-        <div class="relative bg-[#2c0b0e] rounded-xl p-2 border-2 border-[#8e44ad60] shadow-2xl">
-            <div id="slotGrid" class="grid grid-cols-5 gap-1.5 h-[320px]">
-                </div>
-
-            <div id="winToast" class="hidden absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px] z-50">
-                <div class="text-center transform scale-110">
-                    <p class="text-yellow-400 font-black text-4xl italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">WIN!</p>
-                    <p id="winValue" class="text-white text-2xl font-bold bg-black/50 px-4 rounded-full mt-2 tracking-wide">Rp 0</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 text-[10px] mt-2">
-            <div class="bg-[#1c1e2d] p-2 rounded border border-gray-800 text-center">
-                <span class="text-gray-500 block mb-1 uppercase">Total Taruhan</span>
-                <span class="text-blue-400 font-bold text-sm">200.00</span>
-            </div>
-            <div class="bg-[#1c1e2d] p-2 rounded border border-gray-800 text-center">
-                <span class="text-gray-500 block mb-1 uppercase">Kemenangan</span>
-                <span id="lastWin" class="text-emerald-400 font-bold text-sm">0.00</span>
-            </div>
-            <div class="bg-[#1c1e2d] p-2 rounded border border-gray-800 text-center">
-                <span class="text-gray-500 block mb-1 uppercase">Sisa Kredit</span>
-                <span id="creditText" class="text-yellow-500 font-bold text-sm">17.420,708</span>
-            </div>
-        </div>
-    </main>
-
-    <div class="p-6 flex justify-between items-center bg-[#141624] relative">
-        <div class="flex flex-col items-center">
-            <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-yellow-600">
-                <i class="fas fa-bolt"></i>
-            </div>
-            <span class="text-[9px] mt-1 text-gray-500">TURBO</span>
-        </div>
-
-        <button id="spinBtn" onclick="startSpin()" class="relative active:scale-90 transition-transform">
-            <div class="absolute inset-0 bg-emerald-500 blur-xl opacity-20"></div>
-            <div class="w-20 h-20 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-700 border-4 border-white shadow-2xl flex items-center justify-center">
-                <i id="spinIcon" class="fas fa-sync-alt text-3xl text-white"></i>
-            </div>
-        </button>
-
-        <div class="flex flex-col items-center">
-            <div class="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center text-gray-400">
-                <i class="fas fa-play"></i>
-            </div>
-            <span class="text-[9px] mt-1 text-gray-500">AUTO</span>
+        <canvas id="gameCanvas" class="absolute inset-0"></canvas>
+        
+        <div class="absolute bottom-10 left-0 w-full flex gap-2 px-6 overflow-x-auto no-scrollbar">
+            <span class="bg-blue-600/30 border border-blue-500 text-blue-400 px-3 py-1 rounded-lg text-[10px] font-bold">1.50x</span>
+            <span class="bg-purple-600/30 border border-purple-500 text-purple-400 px-3 py-1 rounded-lg text-[10px] font-bold">2.43x</span>
+            <span class="bg-red-600/30 border border-red-500 text-red-400 px-3 py-1 rounded-lg text-[10px] font-bold">1.02x</span>
         </div>
     </div>
 
-    <nav class="flex justify-around p-3 bg-[#1a1c2e] border-t border-gray-800 text-[10px] text-gray-400">
-        <div class="flex flex-col items-center text-blue-500">
-            <i class="fas fa-home text-lg"></i>
-            <span class="mt-1">Favorit</span>
+    <footer class="bg-[#1e1b4b] p-6 rounded-t-[40px] shadow-2xl">
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-black/20 p-3 rounded-2xl border border-gray-700">
+                <label class="text-[9px] text-gray-500 uppercase font-bold">Auto Cashout</label>
+                <div class="flex justify-between items-center mt-1">
+                    <span class="font-mono font-bold">2.00x</span>
+                    <i class="fas fa-angle-right text-gray-600"></i>
+                </div>
+            </div>
+            <div class="bg-black/20 p-3 rounded-2xl border border-gray-700">
+                <label class="text-[9px] text-gray-500 uppercase font-bold">Amount</label>
+                <div class="flex justify-between items-center mt-1">
+                    <span class="font-mono font-bold text-yellow-500">Rp 2.000</span>
+                    <i class="fas fa-angle-right text-gray-600"></i>
+                </div>
+            </div>
         </div>
-        <div class="flex flex-col items-center">
-            <i class="fas fa-wallet text-lg"></i>
-            <span class="mt-1">Deposit</span>
+
+        <button id="mainBtn" onclick="togglePlay()" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-xl font-black shadow-xl shadow-emerald-900/40 active:scale-95 transition-all">
+            BET
+        </button>
+
+        <div class="flex justify-around mt-8 text-gray-500 text-xl">
+            <i class="fas fa-home text-blue-500"></i>
+            <i class="fas fa-history"></i>
+            <i class="fas fa-wallet"></i>
+            <i class="fas fa-user"></i>
         </div>
-        <div class="flex flex-col items-center text-red-500 font-bold">
-            <i class="fas fa-sign-out-alt text-lg"></i>
-            <span class="mt-1 uppercase">Keluar</span>
-        </div>
-    </nav>
+    </footer>
 
     <script>
-        const symbols = ['🀄', '🀅', '🀆', '🀇', '🀈', '🀉', '🀊', '🀋'];
-        let balance = 17420708;
-        let winRate = 30; 
-        let isSpinning = false;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const displayMult = document.getElementById('displayMult');
+        const mainBtn = document.getElementById('mainBtn');
+        const statusLabel = document.getElementById('statusLabel');
 
-        const grid = document.getElementById('slotGrid');
+        let targetCrash = 1.95;
+        let currentMult = 1.00;
+        let isPlaying = false;
+        let robot = { x: 50, y: 200 };
+        let animation;
 
-        function initTiles() {
-            grid.innerHTML = '';
-            for (let i = 0; i < 20; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'mahjong-tile';
-                tile.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-                grid.appendChild(tile);
-            }
+        canvas.width = window.innerWidth;
+        canvas.height = 280;
+
+        function drawFrame(x, y, crashed = false) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw Path Line
+            ctx.beginPath();
+            ctx.setLineDash([8, 4]);
+            ctx.moveTo(0, 250);
+            ctx.quadraticCurveTo(canvas.width/2, 250, x, y);
+            ctx.strokeStyle = crashed ? '#ef4444' : '#60a5fa';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Draw Spaceman (Simple Version)
+            ctx.fillStyle = crashed ? '#ef4444' : '#ffffff';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = crashed ? 'red' : 'cyan';
+            
+            // Robot Head
+            ctx.beginPath();
+            ctx.arc(x, y, 12, 0, Math.PI * 2);
+            ctx.fill();
+            // Body
+            ctx.fillRect(x-8, y+10, 16, 18);
+            
+            ctx.shadowBlur = 0;
         }
 
-        function startSpin() {
-            if (isSpinning || balance < 200) return;
-
-            isSpinning = true;
-            balance -= 200;
-            updateUI();
-            
-            const spinIcon = document.getElementById('spinIcon');
-            spinIcon.classList.add('fa-spin');
-
-            const tiles = document.querySelectorAll('.mahjong-tile');
-            let spinCount = 0;
-            const maxSpins = 12; // Jumlah pergantian simbol
-
-            // Logika Gerakan Perlahan
-            const spinInterval = setInterval(() => {
-                tiles.forEach(tile => {
-                    tile.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-                    tile.classList.add('tile-moving');
-                    tile.classList.remove('win-flash');
-                });
-                
-                spinCount++;
-                if (spinCount >= maxSpins) {
-                    clearInterval(spinInterval);
-                    finalizeResult(tiles);
-                }
-            }, 120); // Kecepatan putaran (perlahan)
+        function togglePlay() {
+            if (isPlaying) return;
+            startFlight();
         }
 
-        function finalizeResult(tiles) {
-            const isWinningTurn = (Math.random() * 100) < winRate;
-            const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-            const spinIcon = document.getElementById('spinIcon');
+        function startFlight() {
+            isPlaying = true;
+            currentMult = 1.00;
+            robot = { x: 50, y: 220 };
             
-            tiles.forEach((tile, index) => {
-                tile.classList.remove('tile-moving');
-                
-                // Jika disetting menang, buat baris kedua jadi sama
-                if (isWinningTurn && index >= 5 && index <= 9) {
-                    tile.innerText = winSymbol;
-                    tile.classList.add('win-flash');
-                } else {
-                    tile.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-                }
-            });
+            mainBtn.innerText = "CASH OUT";
+            mainBtn.classList.replace('from-emerald-500', 'from-orange-500');
+            mainBtn.classList.replace('to-teal-600', 'to-red-600');
+            statusLabel.innerText = "Terbang...";
+            statusLabel.classList.replace('text-red-500', 'text-blue-400');
+            
+            animate();
+        }
 
-            if (isWinningTurn) {
-                const prize = 2000 + (Math.random() * 5000);
-                balance += prize;
-                showWin(prize);
+        function animate() {
+            if (currentMult >= targetCrash) {
+                crash();
+                return;
             }
 
-            spinIcon.classList.remove('fa-spin');
-            isSpinning = false;
-            updateUI();
+            currentMult += 0.01;
+            displayMult.innerText = currentMult.toFixed(2) + "x";
+
+            // Movement Logic
+            robot.x += (canvas.width / (targetCrash * 100)) * 0.9;
+            robot.y -= (180 / (targetCrash * 100)) * 0.9;
+
+            drawFrame(robot.x, robot.y);
+            animation = requestAnimationFrame(animate);
         }
 
-        function showWin(amount) {
-            const toast = document.getElementById('winToast');
-            document.getElementById('winValue').innerText = "Rp " + amount.toLocaleString('id-ID');
-            document.getElementById('lastWin').innerText = amount.toFixed(2);
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2000);
+        function crash() {
+            isPlaying = false;
+            cancelAnimationFrame(animation);
+            
+            displayMult.classList.add('text-red-500', 'crash-anim');
+            statusLabel.innerText = "CRASHED!";
+            statusLabel.classList.replace('text-blue-400', 'text-red-500');
+            
+            drawFrame(robot.x, robot.y, true);
+
+            setTimeout(() => {
+                resetGame();
+            }, 3000);
         }
 
-        function updateUI() {
-            const formatted = balance.toLocaleString('id-ID');
-            document.getElementById('displayBalance').innerText = formatted;
-            document.getElementById('creditText').innerText = formatted;
+        function resetGame() {
+            displayMult.innerText = "1.00x";
+            displayMult.classList.remove('text-red-500', 'crash-anim');
+            mainBtn.innerText = "BET";
+            mainBtn.classList.replace('from-orange-500', 'from-emerald-500');
+            mainBtn.classList.replace('to-red-600', 'to-teal-600');
+            statusLabel.innerText = "Tunggu Putaran...";
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawFrame(50, 220);
         }
 
-        function toggleAdmin() {
-            document.getElementById('adminPanel').classList.toggle('hidden');
+        // Admin Separated Logic
+        function openAdmin() {
+            document.getElementById('adminModal').classList.remove('hidden');
         }
 
-        function saveSettings() {
-            winRate = document.getElementById('winRateRange').value;
-            const extra = parseFloat(document.getElementById('addBalance').value) || 0;
-            balance += extra;
-            document.getElementById('addBalance').value = '';
-            updateUI();
-            toggleAdmin();
+        function closeAdmin() {
+            document.getElementById('adminModal').classList.add('hidden');
         }
 
-        document.getElementById('winRateRange').oninput = function() {
-            document.getElementById('winRateVal').innerText = this.value + "%";
+        function saveAdmin() {
+            const newTarget = document.getElementById('targetInput').value;
+            const newBalance = document.getElementById('balanceInput').value;
+            
+            targetCrash = parseFloat(newTarget);
+            if(newBalance) {
+                document.getElementById('balanceText').innerText = parseFloat(newBalance).toLocaleString('id-ID');
+            }
+
+            closeAdmin();
+            alert("Sistem Diperbarui! Target Tabrak: " + targetCrash + "x");
         }
 
-        initTiles();
-        updateUI();
+        // Initial View
+        drawFrame(50, 220);
     </script>
 </body>
 </html>
